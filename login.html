@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เข้าสู่ระบบ · Oxford 3000</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Mitr:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #F2E8D5;
+    --ink: #2E2A26;
+    --ink-soft: #6B6258;
+    --mustard: #F0B429;
+    --coral: #E8604C;
+    --line: #C9BB9E;
+    --card-bg: #FBF6EA;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(circle at 1px 1px, rgba(46,42,38,0.06) 1px, transparent 0) 0 0/22px 22px,
+      var(--paper);
+    color: var(--ink);
+    font-family: 'Mitr', sans-serif;
+    padding: 24px;
+  }
+  .card{
+    width: 100%;
+    max-width: 360px;
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 32px 28px;
+    box-shadow: 0 10px 30px rgba(46,42,38,0.08);
+  }
+  .eyebrow{
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--coral);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  h1{
+    font-family: 'Fredoka', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 6px 0 22px;
+  }
+  label{
+    display: block;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  input{
+    width: 100%;
+    padding: 11px 12px;
+    margin-bottom: 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-family: 'Mitr', sans-serif;
+    font-size: 15px;
+    background: #fff;
+    color: var(--ink);
+  }
+  input:focus{
+    outline: none;
+    border-color: var(--coral);
+  }
+  button{
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: var(--coral);
+    color: #fff;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  button:hover{ filter: brightness(1.05); }
+  .error{
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--coral);
+    min-height: 16px;
+  }
+</style>
+</head>
+<body>
+
+<form class="card" id="loginForm" autocomplete="off">
+  <div class="eyebrow">Oxford 3000</div>
+  <h1>เข้าสู่ระบบ</h1>
+
+  <label for="username">ชื่อผู้ใช้</label>
+  <input type="text" id="username" autocomplete="off" required>
+
+  <label for="password">รหัสผ่าน</label>
+  <input type="password" id="password" autocomplete="off" required>
+
+  <button type="submit">เข้าสู่ระบบ</button>
+  <div class="error" id="error"></div>
+</form>
+
+<script>
+  // เก็บเฉพาะ SHA-256 ของ "username:password" — ไม่มี plaintext อยู่ในไฟล์นี้เลย
+  const CRED_HASH = "b1d98b857e1a241ea99591d16943e9218442d624b0dfacda0c062b7c7aa141c7";
+  const DEST_PAGE = "oxford3000-complete-3000.html";
+  const SESSION_KEY = "oxford3000_auth";
+
+  async function sha256Hex(text){
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    const hash = await sha256Hex(`${username}:${password}`);
+
+    if (hash === CRED_HASH) {
+      sessionStorage.setItem(SESSION_KEY, hash);
+      location.replace(DEST_PAGE);
+    } else {
+      document.getElementById("error").textContent = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+      document.getElementById("password").value = "";
+    }
+  });
+</script>
+</body>
+</html>
